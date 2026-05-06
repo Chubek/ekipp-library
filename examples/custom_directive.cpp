@@ -1,11 +1,11 @@
-#include "../include/ekipp.hpp"
-#include "../include/directive_bank.hpp"
+#include "ekipp.hpp"
+#include "directive_bank.hpp"
 #include <algorithm>
 #include <iostream>
 
 int main() {
     ekipp::Preprocessor pp;
-    directive_bank::register_all(pp.registry());
+    ekipp::directive_bank::register_all(pp.registry());
 
     auto upper = ekipp::Directive::fluent()
         << ekipp::Directive::Name("upper")
@@ -17,7 +17,7 @@ int main() {
                 return s;
             });
 
-    pp.registry().add(upper);
+    pp.registry().registerDirective(upper);
 
     std::string input = "Result: @upper(hello world)@";
     std::cout << pp.process(input);

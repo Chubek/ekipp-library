@@ -1,5 +1,5 @@
-#include "../include/ekipp.hpp"
-#include "../include/directive_bank.hpp"
+#include "ekipp.hpp"
+#include "directive_bank.hpp"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -9,7 +9,7 @@ int main() {
     cfg.params.include_dirs.push_back("./templates");
 
     ekipp::Preprocessor pp(cfg);
-    directive_bank::register_all(pp.registry());
+    ekipp::directive_bank::register_all(pp.registry());
 
     std::string input = R"(
 @include("header.txt")@

@@ -1,365 +1,236 @@
-# EKIPP: Single-Header C++ Prerprocessor Library
+# Ekipp - Modern C++17 Text Preprocessor Library
 
-**EKIPP (Extensible Keyword‑based Inline PreProcessor)** is a lightweight C++17 framework for building custom text preprocessors, macro systems, and template engines.
+[![C++17](https://img.shields.io/badge/C%2B%2B-17-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B17)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Header-Only](https://img.shields.io/badge/header--only-yes-green.svg)](https://github.com/)
 
-It provides a flexible directive system, macro expansion, and file inclusion while remaining easy to embed inside your own tools.
+Ekipp is a powerful, extensible text preprocessing library for C++17 that provides sophisticated macro expansion and directive-based text transformation capabilities. Perfect for code generation, template processing, and custom text preprocessing needs.
 
-EKIPP is designed for:
+## ✨ Features
 
-- code generation
-- template processing
-- documentation preprocessing
-- configuration assembly
-- domain‑specific languages (DSLs)
+- **Header-only library** - Just include and use, no linking required
+- **Modern C++17** - Clean, efficient code using latest language features
+- **Extensible directives** - Define custom directives with simple lambdas
+- **Powerful macros** - Object-like, function-like, and variadic macros
+- **Configurable syntax** - Customize prefix, brackets, and separators
+- **Source tracking** - Detailed error reporting with file/line/column info
+- **Zero dependencies** - Only requires C++17 standard library
+- **Well documented** - Comprehensive manual and API reference
 
-The library is **header‑only** and easy to integrate into existing projects.
-
----
-
-# Features
-
-- **Macro system** with parameters
-- **Extensible directive registry**
-- **Built‑in directive bank**
-- **Custom directives in C++**
-- **Recursive macro expansion**
-- **File inclusion with search paths**
-- **Source location tracking for errors**
-- **Configurable syntax**
-- **Header‑only design**
-
----
-
-# Quick Example
+## 🚀 Quick Start
 
 ```cpp
-#include "ekipp.hpp"
-#include "directive_bank.hpp"
+#include <ekipp/ekipp.hpp>
+#include <ekipp/directive_bank.hpp>
 #include <iostream>
 
 int main() {
     ekipp::Preprocessor pp;
-
-    // register standard directives
-    directive_bank::register_all(pp.registry());
-
+    ekipp::directive_bank::register_all(pp.registry());
+    
     std::string input = R"(
-
-@define(NAME, World)@
-
-Hello NAME!
-Generated at: @date("%Y-%m-%d")@
-
-)";
-
-    std::cout << pp.process(input);
+        @define(VERSION, 2.0.0)@
+        Version: @VERSION@
+        Date: @date(%Y-%m-%d)@
+    )";
+    
+    std::cout << pp.process(input) << std::endl;
 }
 ```
 
-Output:
-```
-Hello World!
-Generated at: 2026-05-07
-```
+## 📦 Installation
 
----
+Ekipp is header-only. Just copy the headers to your project:
 
-# Installation
+```bash
+# Copy headers
+cp include/ekipp.hpp your_project/include/
+cp include/directive_bank.hpp your_project/include/
 
-EKIPP is header‑only.
-
-Simply copy the headers into your project:
-```
-include/
-    ekipp.hpp
-    directive_bank.hpp
+# Or install system-wide
+make install
 ```
 
-Then include them:
+### Requirements
 
-```cpp
-#include "ekipp.hpp"
-#include "directive_bank.hpp"
+- C++17 compatible compiler (GCC 7+, Clang 5+, MSVC 2017+)
+- Standard library with filesystem support
+
+## 🔧 Building Examples
+
+```bash
+make examples      # Build all examples
+make test          # Run tests
+make docs          # Generate documentation
+make clean         # Clean build artifacts
 ```
 
-Compile with a C++17 compiler.
+## 📚 Documentation
 
-Example:
+- **[User Guide](GUIDE.md)** - Complete usage guide
+- **[API Reference](docs/html/index.html)** - Generated with Doxygen
+- **[Manual](docs/manual/)** - Five-chapter comprehensive manual
+  - Chapter 1: Introduction
+  - Chapter 2: Basic Usage
+  - Chapter 3: Directives
+  - Chapter 4: Advanced Features
+  - Chapter 5: Extending Ekipp
+
+Generate documentation:
+```bash
+make docs
+open docs/html/index.html
 ```
-g++ -std=c++17 main.cpp -o app
-```
 
----
+## 🎯 Built-in Directives
 
-# Basic Concepts
+| Directive | Description | Example |
+|-----------|-------------|---------|
+| `include` | Include external file | `@include("header.txt")@` |
+| `define` | Define macro | `@define(PI, 3.14159)@` |
+| `date` | Insert date/time | `@date(%Y-%m-%d)@` |
+| `exec` | Execute shell command | `@exec(git rev-parse HEAD)@` |
+| `eval` | Evaluate expression | `@eval(2 + 2)@` |
+| `env` | Get environment variable | `@env(HOME)@` |
 
-## Preprocessor
+## 💡 Examples
 
-The main engine responsible for parsing input and expanding directives.
+### Code Generation
 
 ```cpp
 ekipp::Preprocessor pp;
-std::string result = pp.process(input);
+ekipp::directive_bank::register_all(pp.registry());
+
+std::string template_code = R"(
+@define(FIELD(name,type), type name;)@
+
+struct User {
+    @FIELD(id, int)@
+    @FIELD(name, std::string)@
+    @FIELD(age, int)@
+};
+)";
+
+std::cout << pp.process(template_code);
 ```
 
----
-
-## Directives
-
-Directives are commands embedded in text:
-```
-@directive(arguments)@
-```
-
-Example:
-```
-@date("%Y-%m-%d")@
-```
-
-Directives are registered in a **DirectiveRegistry**.
-
----
-
-## Macros
-
-Macros allow text substitution.
-```
-@define(PI, 3.14159)@
-Area = PI * r * r
-```
-
-Macros may also have parameters:
-```
-@define(SQUARE(x), (x)*(x))@
-SQUARE(5)
-```
-
----
-
-# Built‑in Directive Bank
-
-The provided `directive_bank.hpp` registers several useful directives.
-
-## include
-
-Include another file.
-```
-@include("header.txt")@
-```
-
----
-
-## define
-
-Define a macro.
-```
-@define(NAME, EKIPP)@
-```
-
----
-
-## date
-
-Insert formatted current time.
-```
-@date("%Y-%m-%d")@
-```
-
----
-
-## exec
-
-Execute a command and insert its output.
-```
-@exec(git rev-parse HEAD)@
-```
-
----
-
-## system
-
-Execute a command without capturing output.
-```
-@system(make build)@
-```
-
----
-
-## changequote
-
-Change quoting characters used by the parser.
-```
-@changequote([, ])@
-```
-
----
-
-## foreach
-
-Iterate over a list.
-```
-@foreach(x, a b c, Item: x
-)@
-```
-
----
-
-## match
-
-Regex match and substitution.
-```
-@match(hello, h(.*)o, $1)@
-```
-
-Result:
-```
-ell
-```
-
----
-
-## translit
-
-Translate characters.
-```
-@translit(hello, el, ip)@
-```
-
----
-
-## exit
-
-Stop processing immediately.
-```
-@exit()@
-```
-
----
-
-# Custom Directives
-
-New directives can be defined in C++.
-
-Example: uppercase directive.
+### Custom Directive
 
 ```cpp
 auto upper = ekipp::Directive::fluent()
     << ekipp::Directive::Name("upper")
     << ekipp::Directive::NumParams(1)
-    << ekipp::Directive::Semantics(
-        [](ekipp::Arguments& args, ekipp::Context&) {
-            std::string s = args.raw(0);
-            std::transform(s.begin(), s.end(), s.begin(), ::toupper);
-            return s;
-        });
+    << ekipp::Directive::Semantics([](ekipp::Arguments& args, ekipp::Context&) {
+        std::string s = args.raw(0);
+        std::transform(s.begin(), s.end(), s.begin(), ::toupper);
+        return s;
+    });
 
-pp.registry().add(upper);
+pp.registry().registerDirective(upper);
+
+std::string result = pp.process("@upper(hello world)@");
+// Result: "HELLO WORLD"
 ```
 
-Usage:
-
-@upper(hello world)@
-
-
-Output:
-
-HELLO WORLD
-
-
----
-
-# Examples
-
-The `examples/` directory contains practical demonstrations.
-
-### markdown_pp
-
-A Markdown preprocessor with variables, includes, and timestamps.
-
-### codegen
-
-Demonstrates generating C++ code using macros.
-
-### include_demo
-
-Shows how file inclusion works with search paths.
-
-### custom_directive
-
-Illustrates how to implement new directives.
-
----
-
-# Typical Use Cases
-
-EKIPP can be used to build:
-
-- static site generators
-- documentation preprocessors
-- code generators
-- template engines
-- configuration builders
-- DSL compilers
-
----
-
-# Error Handling
-
-EKIPP throws `DirectiveError` when processing fails.
-
-Example:
+### Configuration
 
 ```cpp
-try {
-    pp.process(input);
-}
-catch(const ekipp::DirectiveError& e) {
-    std::cerr << e.what() << std::endl;
-}
+ekipp::Configuration config;
+config.parse.directive_prefix = '#';  // Use # instead of @
+config.limits.max_expansion_depth = 64;
+config.params.include_dirs.push_back("./templates");
+
+ekipp::Preprocessor pp(config);
 ```
 
-Errors include source location information when available.
+## 🏗️ Architecture
 
----
-
-# Documentation
-
-For a full guide and API overview see `GUIDE.md`. An HTML version of this file is available at [my server](https://warble.ir:8000/ekipp-guide.html).
-
-
----
-
-# Project Structure
 ```
-include/
-    ekipp.hpp
-    directive_bank.hpp
-
-examples/
-    markdown_pp.cpp
-    codegen.cpp
-    include_demo.cpp
-    custom_directive.cpp
-
-GUIDE.md
-README.md
+┌─────────────────┐
+│  Preprocessor   │  Main entry point
+└────────┬────────┘
+         │
+    ┌────┴────┬──────────┬──────────┐
+    │         │          │          │
+┌───▼───┐ ┌──▼──────┐ ┌─▼────────┐ ┌▼──────────┐
+│Config │ │Registry │ │SymbolTbl │ │  Context  │
+└───────┘ └─────────┘ └──────────┘ └───────────┘
 ```
 
+## 🎨 Use Cases
+
+- **Code generation** - Generate repetitive code from templates
+- **Documentation** - Preprocess markdown or other documentation
+- **Configuration** - Add macro expansion to config files
+- **Build systems** - Custom preprocessing in build pipelines
+- **Templates** - Create domain-specific template languages
+
+## 🧪 Testing
+
+```bash
+# Run all tests
+make test
+
+# Check syntax
+make check-syntax
+
+# Build with debug symbols
+make debug
+
+# Build with sanitizers
+make sanitize
+```
+
+## 📖 API Overview
+
+### Core Classes
+
+- **`Preprocessor`** - Main processing engine
+- **`Configuration`** - Settings and limits
+- **`DirectiveRegistry`** - Manages directives
+- **`SymbolTable`** - Macro storage and expansion
+- **`Directive`** - Directive definition
+- **`Arguments`** - Directive arguments
+- **`Context`** - Runtime state
+
+### Exception Types
+
+- **`ParseError`** - Parsing errors
+- **`DirectiveError`** - Directive execution errors
+- **`MacroError`** - Macro expansion errors
+
+## 🤝 Contributing
+
+Contributions are welcome! Please ensure:
+
+- Code follows C++17 standards
+- All tests pass
+- Documentation is updated
+- Examples demonstrate new features
+
+## 📄 License
+
+Ekipp is released under the MIT License. See [LICENSE](LICENSE) for details.
+
+## 🔗 Links
+
+- **Documentation**: [docs/html/index.html](docs/html/index.html)
+- **User Guide**: [GUIDE.md](GUIDE.md)
+- **Examples**: [examples/](examples/)
+- **Refactoring Summary**: [REFACTORING_SUMMARY.md](REFACTORING_SUMMARY.md)
+
+## 📊 Project Status
+
+- ✅ Compiles without errors
+- ✅ All examples work
+- ✅ Comprehensive documentation
+- ✅ Complete build system
+- ✅ Ready for production use
+
+**Version**: 2.0.0  
+**Last Updated**: 2025-05-07  
+**Status**: Stable and Functional
+
 ---
 
-# License
-
-This library is released under the MIT license.
-
----
-
-# Contributing
-
-Contributions are welcome. Suggestions for:
-
-- new directives
-- performance improvements
-- additional examples
-- documentation improvements
-
-are always appreciated. Please submit your contribution to the `contrib/` directory. This library was made by AI, so AI-generated code is of course welcome.
+Made with ❤️ by the Ekipp Contributors

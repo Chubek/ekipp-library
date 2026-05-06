@@ -1,8 +1,8 @@
 // markdown_pp.cpp
 // Markdown preprocessor with template variables and includes
 
-#include "../include/ekipp.hpp"
-#include "../include/directive_bank.hpp"
+#include "ekipp.hpp"
+#include "directive_bank.hpp"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
         config.params.include_dirs.push_back("templates/");
         
         ekipp::Preprocessor pp(config);
-        directive_bank::register_all(pp.registry());
+        ekipp::directive_bank::register_all(pp.registry());
 
         // Add custom directives for markdown
         auto toc_entry = ekipp::Directive::fluent()
@@ -45,14 +45,14 @@ int main(int argc, char* argv[]) {
                 return "- [" + title + "](#" + anchor + ")\n";
             });
         
-        pp.registry().add(toc_entry);
+        pp.registry().registerDirective(toc_entry);
 
         // Set source location
         ekipp::SourceLocation loc;
         loc.source_name = argv[1];
 
         // Process
-        std::string output = pp.process(input, loc);
+        std::string output = pp.process(input, loc.source_name);
 
         // Write output
         if (argc >= 3) {

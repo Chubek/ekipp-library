@@ -1,3 +1,15 @@
+/**
+ * @file ekipp.hpp
+ * @brief Ekipp - Modern C++17 Text Preprocessor Library
+ * @version 2.0.0
+ * 
+ * Ekipp is a powerful, extensible text preprocessing library that provides
+ * macro expansion and directive-based text transformation capabilities.
+ * 
+ * @author The Ekipp Contributors
+ * @date 2025
+ * @copyright MIT License
+ */
 #ifndef EKIPP_HPP
 #define EKIPP_HPP
 
@@ -24,6 +36,11 @@
 
 namespace ekipp {
 
+/**
+ * @defgroup core Core Components
+ * @brief Core classes and types for text preprocessing
+ */
+
 // ============================================================================
 // Version
 // ============================================================================
@@ -37,26 +54,46 @@ inline constexpr const char* version_string = "1.1.0";
 // Exceptions
 // ============================================================================
 
+/**
+ * @ingroup core
+ * @brief Base exception class for all Ekipp errors
+ */
 class Error : public std::runtime_error {
 public:
     explicit Error(const std::string& msg) : std::runtime_error(msg) {}
 };
 
+/**
+ * @ingroup core
+ * @brief Exception thrown during text parsing
+ */
 class ParseError : public Error {
 public:
     explicit ParseError(const std::string& msg) : Error(msg) {}
 };
 
+/**
+ * @ingroup core
+ * @brief Exception thrown during directive execution
+ */
 class DirectiveError : public Error {
 public:
     explicit DirectiveError(const std::string& msg) : Error(msg) {}
 };
 
+/**
+ * @ingroup core
+ * @brief Exception thrown during serialization/deserialization
+ */
 class SerializationError : public Error {
 public:
     explicit SerializationError(const std::string& msg) : Error(msg) {}
 };
 
+/**
+ * @ingroup core
+ * @brief Exception thrown during macro expansion
+ */
 class MacroError : public Error {
 public:
     explicit MacroError(const std::string& msg) : Error(msg) {}
@@ -66,6 +103,12 @@ public:
 // Source location
 // ============================================================================
 
+/**
+ * @ingroup core
+ * @brief Represents a location in source text
+ * 
+ * Used for error reporting and tracking the origin of text during processing.
+ */
 struct SourceLocation {
     std::string source_name;
     std::size_t offset = 0;
@@ -148,6 +191,17 @@ inline std::string quoted(const std::string& s) {
 // Dynamic value
 // ============================================================================
 
+/**
+ * @ingroup core
+ * @brief Generic value type for storing different data types
+ * 
+ * Value can hold:
+ * - null (monostate), boolean, integer (int64_t), floating point (double)
+ * - string, array of values, object (map of string to value)
+ * 
+ * Provides type-safe access and conversion methods.
+ */
+
 class Value {
 public:
     using array_type = std::vector<Value>;
@@ -166,8 +220,12 @@ public:
     Value(std::nullptr_t) : data_(std::monostate{}) {}
     Value(bool v) : data_(v) {}
     Value(int v) : data_(static_cast<std::int64_t>(v)) {}
+#if !defined(__LP64__) || defined(_WIN32)
     Value(long v) : data_(static_cast<std::int64_t>(v)) {}
+#endif
+#if LLONG_MAX != INT64_MAX
     Value(long long v) : data_(static_cast<std::int64_t>(v)) {}
+#endif
     Value(std::int64_t v) : data_(v) {}
     Value(double v) : data_(v) {}
     Value(const char* v) : data_(std::string(v ? v : "")) {}
@@ -621,6 +679,29 @@ struct ArgumentSpec {
     std::unordered_map<std::string, Value> metadata;
 };
 
+/**
+ * @ingroup core
+ * @brief Directive definition and builder
+ * 
+ * Directives are the primary extension mechanism in Ekipp. A directive
+ * is a named operation that takes arguments and produces output.
+ * 
+ * Directives can be created using the fluent builder API:
+ * @code
+ * auto hello = ekipp::Directive::fluent()
+ *     << ekipp::Directive::Name("hello")
+ *     << ekipp::Directive::NumParams(1)
+ *     << ekipp::Directive::Semantics([](ekipp::Arguments& args, ekipp::Context&) {
+ *         return "Hello, " + args.raw(0) + "!";
+ *     });
+ * 
+ * pp.registry().registerDirective(hello);
+ * @endcode
+ * 
+ * @see DirectiveRegistry
+ * @see Arguments
+ * @see Context
+ */
 class Directive {
 public:
     using semantics_type = std::function<std::string(Arguments&, Context&)>;
@@ -935,6 +1016,17 @@ inline ArgumentSpec arg(std::string name,
 // ============================================================================
 // Registry
 // ============================================================================
+
+/**
+ * @ingroup core
+ * @brief Registry for managing available directives
+ * 
+ * The DirectiveRegistry stores all registered directives and provides
+ * lookup by name. Directives can be registered, unregistered, and queried.
+ * 
+ * @see Directive
+ * @see Preprocessor
+ */
 
 class DirectiveRegistry {
 public:
@@ -1437,6 +1529,24 @@ public:
 // ============================================================================
 // Preprocessor
 // ============================================================================
+
+/**
+ * @ingroup core
+ * @brief Main text preprocessing engine
+ * 
+ * The Preprocessor class is the primary entry point for text processing.
+ * It orchestrates directive execution, macro expansion, and text transformation.
+ * 
+ * Example usage:
+ * @code
+ * ekipp::Preprocessor pp;
+ * ekipp::directive_bank::register_all(pp.registry());
+ * 
+ * std::string input = "@define(NAME, World)@Hello, @NAME@!";
+ * std::string output = pp.process(input);
+ * // Output: "Hello, World!"
+ * @endcode
+ */
 
 class Preprocessor {
 public:

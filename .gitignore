@@ -217,4 +217,11 @@ third_party/*
 !third_party/.gitkeep
 
 AGENTS.md
+AGENT_PROCESS.md
+COMPLETION_REPORT.md
+REFACTORING_SUMMARY.md
 
+docs/html
+docs/latex
+docs/xml
+docs/docbook

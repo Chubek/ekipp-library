@@ -1,10 +1,10 @@
-#include "../include/ekipp.hpp"
-#include "../include/directive_bank.hpp"
+#include "ekipp.hpp"
+#include "directive_bank.hpp"
 #include <iostream>
 
 int main() {
     ekipp::Preprocessor pp;
-    directive_bank::register_all(pp.registry());
+    ekipp::directive_bank::register_all(pp.registry());
 
     std::string template_code = R"(
 
